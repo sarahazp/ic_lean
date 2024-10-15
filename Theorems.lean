@@ -51,7 +51,7 @@ by
 -- agora, precisamos definir a redução
 -- seria o mesmo que dizer que φ : G → G/<B(X)> , g ↦ g + <B(X)>
 -- e que, na prática é o mesmo reduzir os expoentes dos monômios
--- No caso, o que eu quero mostrar é q ∀ g ∈ G, n ≥ 1, g^n = g:
+-- No caso, o que eu quero mostrar é q g monômio, n ≥ 1, g^n = g:
 
 -- Vendo q B está definido corretamente:
 theorem B_elems (n : Nat) (m : MvPolynomial (Fin n) ℤ) : (m ∈ (B n)) → (∃ k : (Fin n), m = (X k) ^ 2 - (X k)) :=
