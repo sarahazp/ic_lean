@@ -48,10 +48,12 @@ by
   {exact hgh}
   {exact hhk}
 
--- agora, definir a redução do artigo
--- seria o mesmo que dizer que φ : G → G/<B(X)> , g ↦ g + <B(X)>, e que, na prática, é o mesmo reduzir os expoentes dos monômios
+-- agora, precisamos definir a redução
+-- seria o mesmo que dizer que φ : G → G/<B(X)> , g ↦ g + <B(X)>
+-- e que, na prática é o mesmo reduzir os expoentes dos monômios
 -- No caso, o que eu quero mostrar é q ∀ g ∈ G, n ≥ 1, g^n = g:
 
+-- Vendo q B está definido corretamente:
 theorem B_elems (n : Nat) (m : MvPolynomial (Fin n) ℤ) : (m ∈ (B n)) → (∃ k : (Fin n), m = (X k) ^ 2 - (X k)) :=
 by
   intro h1
@@ -60,6 +62,15 @@ by
   use x
 
 -- g sendo uma variável só:
+/-
+Dem.:
+  n = 1
+    x ^ 1 = x
+  n = 2
+    x ^ 2 = x, pq x^2 - x = 0 em G/<B(X)>
+  Suponha x ^ k = x (algum k)
+  x^{k+1} = x.x^k = x.x = x^2 = x
+-/
 theorem xn_r_x (n : Nat) (g : (Fin n)) : m ≥ 1 → equiv_mod_B n (X g) (X g ^ m) :=
 by
   intro hm
