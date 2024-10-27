@@ -5,7 +5,7 @@ open Ideals
 open Equivalence
 
 namespace Examples
--- Agora começam os exemplos de pertencimento aos ideais
+-- Esse arquivo contém exemplos de pertencimento aos ideais
 -- Exemplo: provar que X 1 ∈ <G>
 noncomputable def p : MvPolynomial (Fin 2) ℤ := X 0 + X 1
 noncomputable def k : MvPolynomial (Fin 2) ℤ := X 0
