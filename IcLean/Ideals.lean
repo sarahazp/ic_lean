@@ -39,5 +39,3 @@ by
   exact Submodule.zero_mem (Ideal.span S)
 
 end Ideals
-
-def one {R : Type*} [CommRing R] : Prop := ∃! (one : R), (∀ (x : R), one*x = x)
