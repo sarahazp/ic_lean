@@ -5,20 +5,6 @@ open Equivalence
 open MvPolynomial
 open Std
 
--- Examplo de um hashmap no lean
-def exampleHashMap : HashMap Nat String :=
-  let emptyMap := HashMap.empty
-  let map1 := emptyMap.insert 5 "apple"
-  let map2 := map1.insert 10 "banana"
-  let map3 := map2.insert 20 "cherry"
-  map3
-
-#eval exampleHashMap[5]?
-#eval exampleHashMap[10]?
-#eval (exampleHashMap[30]? == none)
-#eval exampleHashMap.size
-#eval exampleHashMap.insert 30 "orange"
-
 def initHashTable (h : HashMap String Nat): List String → HashMap String Nat
 | [] => h
 | s :: ss =>
@@ -30,6 +16,12 @@ def G : List String := ["hsa^8", "asa", "bsa^4"]
 def h : HashMap String Nat := initHashTable (HashMap.empty) G
 #eval h["lls"]?
 def n : Nat := h.size
+
+structure Rules where
+  o : String -- operador  =, d, + ou *
+  v : MvPolynomial (Fin (n+1)) ℤ -- polinômio 1
+  w : MvPolynomial (Fin (n+1)) ℤ -- polinômio 2
+  p : MvPolynomial (Fin (n+1)) ℤ -- resultado de se aplicar 'o' em 'v' e 'w'
 
 noncomputable def handle_exponents : List String → MvPolynomial (Fin (n+1)) ℤ
 | [] => C 1
@@ -65,7 +57,6 @@ noncomputable def f (z : String) : MvPolynomial (Fin (n+1)) ℤ :=
       C 1 - x
     else
       C 0
-
 
 def split_terms : List String → List String
 | [] => []
@@ -153,3 +144,36 @@ noncomputable def parsePolynomial (s : String) : MvPolynomial (Fin (n+1)) ℤ :=
         else aux (String.singleton c) (lst ++ [acc]) cs
       else aux (acc.push c) lst cs
   callParseMon (aux "" [] s.toList)
+
+noncomputable def str_to_rule (line : String) : Rules :=
+  let num := takeWhileDigit (line).trim
+  let l := (line.drop num.length).trim
+  if l.startsWith "d" then
+    Rules.mk "d" (C num.toInt!) (C 0) (C 0)
+  else if l.startsWith "=" then
+    if l.contains ',' ∧ l.contains ';' then
+      let aux := (l.drop 1).trim
+      let polys := aux.splitOn ","
+      let lastP := polys[1]!.trim.splitOn ";"
+      Rules.mk "=" (parsePolynomial polys[0]!.trim) (C 0) (parsePolynomial lastP[0]!.trim)
+    else Rules.mk "error" (C 0) (0) (0)
+  else if l.startsWith "+" then
+    if l.contains ',' ∧ l.contains ';' then
+      let aux := (l.drop 1).trim
+      let polys := aux.splitOn ","
+      let lastP := polys[2]!.trim.splitOn ";"
+      Rules.mk "+" (parsePolynomial polys[0]!.trim) (parsePolynomial polys[1]!.trim) (parsePolynomial lastP[0]!.trim)
+    else Rules.mk "error" (C 0) (0) (0)
+  else if l.startsWith "*" then
+    if l.contains ',' ∧ l.contains ';' then
+      let aux := (l.drop 1).trim
+      let polys := aux.splitOn ","
+      let lastP := polys[2]!.trim.splitOn ";"
+      Rules.mk "*" (parsePolynomial polys[0]!.trim) (parsePolynomial polys[1]!.trim) (parsePolynomial lastP[0]!.trim)
+    else Rules.mk "error" (C 0) (0) (0)
+  else
+    Rules.mk "error" (C 0) (0) (0)
+
+noncomputable def rule_maker : List String → List Rules
+| [] => []
+| s::ss => str_to_rule s :: rule_maker ss
