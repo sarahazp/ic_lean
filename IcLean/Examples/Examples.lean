@@ -1,4 +1,4 @@
-import IcLean.QuotBProperties
+import IcLean.Theorems.QuotBProperties
 
 open MvPolynomial
 open Ideals

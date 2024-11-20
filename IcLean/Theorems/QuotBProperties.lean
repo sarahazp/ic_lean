@@ -1,4 +1,4 @@
-import IcLean.Ideals
+import IcLean.Theorems.Ideals
 
 open MvPolynomial
 open Ideals

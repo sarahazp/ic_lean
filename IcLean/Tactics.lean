@@ -1,5 +1,5 @@
 import Lean
-import IcLean.QuotBProperties
+import IcLean.Theorems.QuotBProperties
 
 open Lean Elab Command
 open MvPolynomial
