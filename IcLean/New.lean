@@ -126,28 +126,9 @@ by
   get_info
   rfl
 -/
-def getNatLit? : Expr → Option Nat
-  | Expr.app (Expr.app _ (Expr.lit (Literal.natVal x))) _ => some x
-  | _ => none
-
-def stxToNat (h : Term) : TacticM Nat := do
-  let expr ← elabTerm h.raw none
-  match getNatLit? expr with
-  | some i => pure i
-  | none   => throwError "getNatLit? failed"
 
 
 syntax (name := listG2) "listG2" ("[" term,* "]")? ("," term)? : tactic
-def parseG2 : Syntax → TacticM (List Nat × Option Nat)
-  | `(tactic| listG2 [ $[$hs],* ]) =>
-    hs.toList.mapM stxToNat >>= λ li => return ⟨li, none⟩
-  | `(tactic| listG2 [ $[$hs],* ], $i) =>
-    hs.toList.mapM stxToNat >>= λ li =>
-      elabTerm i none >>= λ i' =>
-        return ⟨li, getNatLit? i'⟩
-  | _ => throwError "[listG2]: wrong usage"
-
-
 /--
 Garante que o comprimento da lista `vars` corresponde a `n`. Lança um erro caso contrário.
 -/
@@ -178,16 +159,6 @@ def parseG2Poly : Syntax → TacticM (List Expr × Option Expr)
     let index ← stxToMvPolynomial i
     return (polys, some index)
   | _ => throwError "[listG2Poly]: uso inválido"
-
-example : TacticM Unit := do
-  -- Define a entrada no formato listG2Poly
-  let stx ← `(listG2Poly G2)
-  -- Parseia a entrada usando parseG2Poly
-  let (polys, idx) ← parseG2Poly stx
-  -- Exibe o índice (se existir)
-  match idx with
-  | some i => trace[Meta.debug] m!"Índice"
-  | none   => trace[Meta.debug] m!"Nenhum índice fornecido"
 
 /-
   - Colocar a lista de regras na tática
