@@ -206,7 +206,6 @@ elab "addHypothesesForGFromRules" G:term : tactic =>
       let hypName := mkIdent (Name.mkSimple s!"hp{i+1}")
       let elemSyntax ← Term.exprToSyntax elems[i]!
       evalTactic (← `(tactic | have $hypName : $elemSyntax ∈ (Ideal.span $G) := by exact Ideal.subset_span (by simp [G])))
-      dbg_trace f!"skaj"
 
 
 theorem theorem_testing_macros2 : k ∈ Ideal.span G :=
