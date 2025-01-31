@@ -161,39 +161,14 @@ unsafe def getMvPolynomial? {n : Nat} (e : Expr) : MetaM (Option (MvPolynomial (
   catch _ =>
     return none
 
-noncomputable def getMvPolynomialLit? : Expr → Option (MvPolynomial (Fin 3) ℤ)
-| Expr.lit (Literal.natVal n) =>
-    -- Converte um literal inteiro em um polinômio constante
-    some (MvPolynomial.C (Int.ofNat n))
-| Expr.app (Expr.const ``Int.ofNat _) (Expr.lit (Literal.natVal n)) =>
-    -- Converte um literal inteiro diretamente
-    some (MvPolynomial.C (Int.ofNat n))
-| Expr.app (Expr.const ``MvPolynomial.X _) (Expr.lit (Literal.natVal n)) =>
-    -- Converte uma variável indexada como `X n`
-    some (MvPolynomial.X (Fin.ofNat n))
-| Expr.app (Expr.app (Expr.const ``Add.add _) e1) e2 =>
-    -- Combinação por soma
-    match (getMvPolynomialLit? e1, getMvPolynomialLit? e2) with
-    | (some p1, some p2) => some (p1 + p2)
-    | _ => none
-| Expr.app (Expr.app (Expr.const ``Mul.mul _) e1) e2 =>
-    -- Combinação por produto
-    match (getMvPolynomialLit? e1, getMvPolynomialLit? e2) with
-    | (some p1, some p2) => some (p1 * p2)
-    | _ => none
-| _ => none
 
-
-noncomputable def stxToMvPolynomial (h : Term) : TacticM (MvPolynomial (Fin 3) ℤ) := do
+def stxToMvPolynomial (h : Term) : TacticM (Expr) := do
   let expr ← elabTerm h.raw none
-  dbg_trace f!"{expr}"
-  match getMvPolynomialLit? expr with
-  | some i => pure i
-  | none   => throwError "? failed"
+  pure expr
 
 syntax (name := listG2Poly) "listG2Poly" term "," ("[" term,* "]")? ("," term)? : tactic
 
-noncomputable def parseG2Poly : Syntax → TacticM (List (MvPolynomial (Fin 3) ℤ) × Option (MvPolynomial (Fin 3) ℤ))
+def parseG2Poly : Syntax → TacticM (List Expr × Option Expr)
   | `(tactic| listG2Poly $_, [ $[$hs],* ]) => do
     let polys ← hs.toList.mapM (stxToMvPolynomial)
     -- dbg_trace f!"{polys}"
@@ -204,7 +179,7 @@ noncomputable def parseG2Poly : Syntax → TacticM (List (MvPolynomial (Fin 3) �
     return (polys, some index)
   | _ => throwError "[listG2Poly]: uso inválido"
 
-noncomputable example : TacticM Unit := do
+example : TacticM Unit := do
   -- Define a entrada no formato listG2Poly
   let stx ← `(listG2Poly G2)
   -- Parseia a entrada usando parseG2Poly
@@ -226,7 +201,6 @@ elab "addHypothesesForGFromRules" G:term : tactic =>
     let stx ← `(listG2Poly rules)
     -- Continuar a partir daqui
     let elems ← parseG2Poly stx -- TacticM (List (MvPolynomial (Fin 3) ℤ) × Option (MvPolynomial (Fin 3) ℤ))
-
     for i in [:elems.size] do -- seria possível iterar pela lista de Expr
       let elem := mkConst elems[i]!  -- Create a constant for the element
       let hypName := mkIdent (Name.mkSimple s!"hp{i+1}")
