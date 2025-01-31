@@ -166,14 +166,14 @@ def stxToMvPolynomial (h : Term) : TacticM (Expr) := do
   let expr ← elabTerm h.raw none
   pure expr
 
-syntax (name := listG2Poly) "listG2Poly" term "," ("[" term,* "]")? ("," term)? : tactic
+syntax (name := listG2Poly) "listG2Poly" ("[" term,* "]")? ("," term)? : tactic
 
 def parseG2Poly : Syntax → TacticM (List Expr × Option Expr)
-  | `(tactic| listG2Poly $_, [ $[$hs],* ]) => do
+  | `(tactic| listG2Poly  [ $[$hs],* ]) => do
     let polys ← hs.toList.mapM (stxToMvPolynomial)
     -- dbg_trace f!"{polys}"
     return (polys, none)
-  | `(tactic| listG2Poly $_, [ $[$hs],* ], $i) => do
+  | `(tactic| listG2Poly  [ $[$hs],* ], $i) => do
     let polys ← hs.toList.mapM (stxToMvPolynomial)
     let index ← stxToMvPolynomial i
     return (polys, some index)
@@ -197,12 +197,34 @@ example : TacticM Unit := do
 noncomputable def rules : List (MvPolynomial (Fin 3) ℤ) := [poly1, poly2, poly3]
 
 elab "addHypothesesForGFromRules" G:term : tactic =>
-  withMainContext do
+  Lean.Elab.Tactic.withMainContext do
     let stx ← `(listG2Poly rules)
     -- Continuar a partir daqui
-    let elems ← parseG2Poly stx -- TacticM (List (MvPolynomial (Fin 3) ℤ) × Option (MvPolynomial (Fin 3) ℤ))
-    for i in [:elems.size] do -- seria possível iterar pela lista de Expr
-      let elem := mkConst elems[i]!  -- Create a constant for the element
+    let ⟨elems, _⟩ ← parseG2Poly stx
+
+    for i in [:elems.length] do -- seria possível iterar pela lista de Expr
+      let elem := (elems[i]!) -- Create a constant for the element
       let hypName := mkIdent (Name.mkSimple s!"hp{i+1}")
       let elemSyntax ← Term.exprToSyntax elem
       evalTactic (← `(tactic | have $hypName : $elemSyntax ∈ (Ideal.span $G) := by exact Ideal.subset_span (by simp [G])))
+      dbg_trace f!"skaj"
+
+
+theorem theorem_testing_macros2 : k ∈ Ideal.span G :=
+by
+  rw[G]
+
+  addHypothesesForGFromRules
+  have h1 : poly3 * X 0 ∈ Ideal.span G :=
+  by
+    mul
+  have h2 : poly1 * X 0 ∈ Ideal.span G :=
+  by
+    mul
+  have h3 : k = poly3 * X 0 + poly1 * X 0 :=
+  by
+    rw[k, poly1, poly3]
+    ring_nf
+  rw[h3]
+  add
+  done
