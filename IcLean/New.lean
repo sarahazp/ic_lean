@@ -77,7 +77,7 @@ by
 -/
 theorem thrm : tgt ∈ Ideal.span G :=
 by
-  -- get_info
+  get_info
   have hp1 : poly1 ∈ Ideal.span G :=
     by exact Ideal.subset_span (by simp [G])
   have hp2 : poly2 ∈ Ideal.span G :=
@@ -203,9 +203,8 @@ elab "addHypothesesForGFromRules" G:term : tactic =>
     let ⟨elems, _⟩ ← parseG2Poly stx
 
     for i in [:elems.length] do -- seria possível iterar pela lista de Expr
-      let elem := (elems[i]!) -- Create a constant for the element
       let hypName := mkIdent (Name.mkSimple s!"hp{i+1}")
-      let elemSyntax ← Term.exprToSyntax elem
+      let elemSyntax ← Term.exprToSyntax elems[i]!
       evalTactic (← `(tactic | have $hypName : $elemSyntax ∈ (Ideal.span $G) := by exact Ideal.subset_span (by simp [G])))
       dbg_trace f!"skaj"
 
