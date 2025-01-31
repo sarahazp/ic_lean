@@ -147,17 +147,13 @@ def stxToMvPolynomial (h : Term) : TacticM (Expr) := do
   let expr ← elabTerm h.raw none
   pure expr
 
-syntax (name := listG2Poly) "listG2Poly" ("[" term,* "]")? ("," term)? : tactic
+syntax (name := listG2Poly) "listG2Poly" ("[" term,* "]")?  : tactic
 
 def parseG2Poly : Syntax → TacticM (List Expr × Option Expr)
   | `(tactic| listG2Poly  [ $[$hs],* ]) => do
     let polys ← hs.toList.mapM (stxToMvPolynomial)
     -- dbg_trace f!"{polys}"
     return (polys, none)
-  | `(tactic| listG2Poly  [ $[$hs],* ], $i) => do
-    let polys ← hs.toList.mapM (stxToMvPolynomial)
-    let index ← stxToMvPolynomial i
-    return (polys, some index)
   | _ => throwError "[listG2Poly]: uso inválido"
 
 /-
